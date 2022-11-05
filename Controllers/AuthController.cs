@@ -18,7 +18,7 @@ public class AuthController : ControllerBase
         if (!IsAuthorityTokenValid(request.AuthorityToken))
             return OperationResult.Wrong;
 
-        var result = await UserData.CreateNewUser(request.TelegramId);
+        var result = await UserData.CreateNewUser(request);
 
         return new OperationResult { Status = result.Status };
     }

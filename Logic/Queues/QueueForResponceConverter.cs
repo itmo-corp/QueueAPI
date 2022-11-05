@@ -19,7 +19,7 @@ public class QueueForResponceConverter
     public async static Task<QueueMemberResponce> Convert(QueueMember member)
     {
         var result = new QueueMemberResponce();
-        result.DisplayName = (await new UserData(member.UserId).GetCredentials()).Data!.DisplayName;
+        result.DisplayName = await new UserData(member.UserId).Credentials.GetDisplayName();
         result.IsReady = member.IsReady;
         return result;
     }
@@ -27,7 +27,6 @@ public class QueueForResponceConverter
     private async static Task<string> GetUserDisplayName(ObjectId userId)
     {
         var user = new UserData(userId);
-        var credentials = await user.GetCredentials();
-        return credentials.Data!.DisplayName;
+        return await user.Credentials.GetDisplayName();
     }
 }

@@ -19,34 +19,30 @@ public class UserData
 
     public async static Task<UserData?> ByTelegramId(string telegramId)
     {
-        var credentials = await CredentialsData.Collection.Find(Builders<UserCredentials>.Filter.Eq("TelegramId", telegramId))
+        var credentials = await CredentialsView.Collection.Find(Builders<UserCredentials>.Filter.Eq("TelegramId", telegramId))
                     .SingleOrDefaultAsync();
         if (credentials == null)
             return null;
-        
-        var userData = new UserData(credentials.Id);
-        userData._credentialsData = new CredentialsData(userData.Id);
-        userData._credentialsData.Data = credentials;
-        return userData;
+
+        return new UserData(credentials.Id);
     }
-    
+
     public ObjectId Id { get; init; }
 
-    private CredentialsData _credentialsData = null!;
-    public async Task<CredentialsData> GetCredentials() => _credentialsData ?? (_credentialsData = await new CredentialsData(Id).Load());
-
     public KnownQueuesView KnownQueues => new KnownQueuesView(Id);
+    public CredentialsView Credentials => new CredentialsView(Id);
 
-    public async static Task<OperationResult<UserData>> CreateNewUser(string login)
+    public async static Task<OperationResult<UserData>> CreateNewUser(Models.API.Auth.UserRegisterRequest request)
     {
-        if (await ByTelegramId(login) != null)
+        if (await ByTelegramId(request.TelegramId) != null)
             return new OperationResult<UserData> { Status = OperationStatus.AlreadyTaken };
+
         var userData = new UserData(ObjectId.GenerateNewId());
-        var credentials = await userData.GetCredentials();
-        credentials.Data = new UserCredentials();
-        credentials.Data.Id = userData.Id.ToString();
-        credentials.Data.TelegramId = login;
-        await credentials.Save();
+        var credentials = userData.Credentials.GetNewCredentials();
+        credentials.Id = userData.Id.ToString();
+        credentials.TelegramId = request.TelegramId;
+        credentials.DisplayName = request.Name;
+        await userData.Credentials.SaveNewCredentials(credentials);
         return new OperationResult<UserData> { Status = OperationStatus.Ok, Result = userData };
     }
 

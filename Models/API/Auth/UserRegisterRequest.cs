@@ -8,5 +8,7 @@ public class UserRegisterRequest
 {
     [Required(ErrorMessage = "Id required")]
     public string TelegramId { get; set; } = null!;
+    [Required(ErrorMessage = "Name required")]
+    public string Name { get; set; } = null!;
     public string AuthorityToken { get; set; } = null!;
 }
