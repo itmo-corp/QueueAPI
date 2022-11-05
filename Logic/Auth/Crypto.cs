@@ -27,7 +27,7 @@ public static class Crypto
         return Convert.ToBase64String(salt);
     }
 
-    private const string chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+    private const string chars = "0123456789abcdef";
 
     public static string GetToken(int size)
     {

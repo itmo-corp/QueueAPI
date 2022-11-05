@@ -14,6 +14,6 @@ public static class Configs
     public static string MongoDBName => Environment.GetEnvironmentVariable("MONGODB_DB_NAME") ?? "default";
 
     public static string[] AthorityTokens => (Environment.GetEnvironmentVariable("AUTHORITY_TOKENS") ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries);
-    public static int APITokenSize => int.Parse(Environment.GetEnvironmentVariable("API_TOKEN_SIZE") ?? "24"); // default is 15 minutes
+    public static int APITokenSize => int.Parse(Environment.GetEnvironmentVariable("API_TOKEN_SIZE") ?? "24");
     
 }

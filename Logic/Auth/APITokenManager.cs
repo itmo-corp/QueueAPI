@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 using QueueAPI.Models.DB.Auth;
 
@@ -17,13 +18,13 @@ public static class APITokenManager
 
     public async static Task<APIToken?> GetToken(string tokenId)
     {
-        return await Collection.Find(Builders<APIToken>.Filter.Eq("_id", tokenId))
+        return await Collection.Find(Builders<APIToken>.Filter.Eq("_id", ObjectId.Parse(tokenId)))
             .SingleOrDefaultAsync();
     }
 
     public static async Task DeleteToken(APIToken token)
     {
-        await Collection.FindOneAndDeleteAsync(Builders<APIToken>.Filter.Eq("_id", token.Id));
+        await Collection.FindOneAndDeleteAsync(Builders<APIToken>.Filter.Eq("_id", ObjectId.Parse(token.Id)));
     }
 
     public static async Task<List<APIToken>> GetAllTokensOfUser(UserData user)

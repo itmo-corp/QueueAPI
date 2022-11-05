@@ -24,7 +24,7 @@ public class KnownQueuesView
     public async Task Add(string id)
     {
         await Collection.UpdateOneAsync(x => x.Id == Id.ToString(),
-            Builders<UserKnownQueues>.Update.Push(x => x.Items, ObjectId.Parse(id)), new UpdateOptions { IsUpsert = true });
+            Builders<UserKnownQueues>.Update.AddToSet(x => x.Items, ObjectId.Parse(id)), new UpdateOptions { IsUpsert = true });
     }
 
     public async Task Remove(string id)
