@@ -7,5 +7,7 @@ public class DeleteApiTokenRequest
     [Required]
     public string Token { get; set; } = null!;
     [Required]
+    public string UserTelegramId { get; set; } = null!;
+    [Required]
     public string AuthorityToken { get; set; } = null!;
 }

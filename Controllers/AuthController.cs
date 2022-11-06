@@ -51,6 +51,11 @@ public class AuthController : ControllerBase
 
         if (token is null)
             return OperationResult.NotExists;
+
+        var user = new UserData(token.UserId);
+
+        if (await user.Credentials.GetTelegramId() != request.UserTelegramId)
+            return OperationResult.NotExists;
         
         await APITokenManager.DeleteToken(token);
 
