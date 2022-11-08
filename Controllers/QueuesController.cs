@@ -25,7 +25,7 @@ public class QueuesController : ControllerBase
 
         if (result.Status != OperationStatus.Ok)
             return new OperationResult<string> { Status = result.Status };
-        
+
         await user.KnownQueues.Add(queue.Id);
 
         return OperationResult<string>.Ok(queue.Id);
@@ -40,12 +40,12 @@ public class QueuesController : ControllerBase
 
         if (queue is null)
             return new OperationResult<string> { Status = OperationStatus.NotExists };
-        
+
         var password = await queue.GetPassword();
 
         if (password != request.Password)
             return new OperationResult<string> { Status = OperationStatus.Wrong };
-        
+
         await user.KnownQueues.Add(queue.Id.ToString());
 
         return OperationResult<string>.Ok(queue.Id.ToString());
@@ -62,7 +62,7 @@ public class QueuesController : ControllerBase
         var queue = new LabQueueView(queueId);
 
         await user.KnownQueues.Remove(queueId);
-        
+
         await queue.RemoveUser(user);
 
         return OperationResult.Ok;
@@ -138,6 +138,20 @@ public class QueuesController : ControllerBase
         return OperationResult<string[]>.Ok(knownQueues.Items.Select(x => x.ToString()).ToArray());
     }
 
+    [HttpGet("getKnownQueuesNames")]
+    public async Task<OperationResult<string[]>> GetMyQueuesNames()
+    {
+        var user = GetUser();
+
+        var knownQueuesIds = await user.KnownQueues.Get();
+
+        var queues = knownQueuesIds.Items.Select(x => new LabQueueView(x));
+
+        var names = await Task.WhenAll(queues.Select(async x => (await x.GetName())!));
+
+        return OperationResult<string[]>.Ok(names);
+    }
+
     [HttpPost("getQueueName")]
     public async Task<OperationResult<string>> GetQueueName([FromBody] string queueId)
     {
@@ -146,13 +160,13 @@ public class QueuesController : ControllerBase
         if (!await user.KnownQueues.Contains(queueId))
             return new OperationResult<string> { Status = OperationStatus.Forbid };
 
-        var queue = new LabQueueView(queueId); // TODO add check on entry in DB
+        var queue = new LabQueueView(queueId);
 
         var name = await queue.GetName();
 
         if (name is null)
             return new OperationResult<string> { Status = OperationStatus.NotExists };
-        
+
         return OperationResult<string>.Ok(name);
     }
 
@@ -164,15 +178,47 @@ public class QueuesController : ControllerBase
         if (!await user.KnownQueues.Contains(queueId))
             return new OperationResult<LabQueueResponce> { Status = OperationStatus.Forbid };
 
-        var queue = new LabQueueView(queueId); // TODO add check on entry in DB
+        var queue = new LabQueueView(queueId);
 
         var rawQueue = await queue.GetRawQueue();
 
         if (rawQueue is null)
             return new OperationResult<LabQueueResponce> { Status = OperationStatus.NotExists };
-        
+
         return OperationResult<LabQueueResponce>.Ok(await QueueForResponceConverter.Convert(rawQueue));
     }
+
+    [HttpPost("getQueueIdByName")]
+    public async Task<OperationResult<string>> GetQueueIdByName([FromBody] string queueName)
+    {
+        var user = GetUser();
+
+        var queue = await LabQueueView.GetQueueByName(queueName);
+
+        if (queue is null || !await user.KnownQueues.Contains(queue.Id.ToString()))
+            return new OperationResult<string> { Status = OperationStatus.Forbid };
+
+        return OperationResult<string>.Ok(queue.Id.ToString());
+    }
+
+    [HttpPost("getImInQueue")]
+    public async Task<OperationResult<bool>> GetImInQueue([FromBody] string queueId)
+    {
+        var user = GetUser();
+
+        if (!await user.KnownQueues.Contains(queueId))
+            return new OperationResult<bool> { Status = OperationStatus.Forbid };
+
+        var queue = new LabQueueView(queueId);
+
+        var queueMembers = await queue.GetMembers();
+
+        if (queueMembers is null)
+            return new OperationResult<bool> { Status = OperationStatus.NotExists };
+
+        return OperationResult<bool>.Ok(queueMembers.Select(x => x.UserId).Contains(user.Id.ToString()));
+    }
+
 
     private UserData GetUser() => new UserData(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 }

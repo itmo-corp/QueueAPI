@@ -81,4 +81,9 @@ public class LabQueueView
     {
         return await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Maintainers).FirstOrDefaultAsync();
     }
+
+    public async Task<List<QueueMember>?> GetMembers()
+    {
+        return await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Members).FirstOrDefaultAsync();
+    }
 }
