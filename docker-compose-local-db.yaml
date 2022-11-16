@@ -1,0 +1,36 @@
+services:
+  api:
+    image: queue-api:latest
+    depends_on:
+      - db
+    build:
+      context: "."
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://loaclhost:1423
+      - JWT_KEY=${JWT_KEY}
+      - JWT_ISSUER=loaclhost:1423
+      - JWT_AUDIENCE=loaclhost:1423
+      - AUTHORITY_TOKENS=${AUTHORITY_TOKENS}
+      - MONGODB_URL=${LOCAL_MONGODB_URL}
+    restart: always
+    ports:
+      - 1423:1423
+    networks:
+      - queue-api-net
+      - default
+  db:
+    image: mongo
+    volumes:
+      - ~/.db/queue:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${LOCAL_MONGO_NAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${LOCAL_MONGO_PASSWORD}
+    ports:
+      - 27017:27017
+
+networks:
+  queue-api-net:
+    name: queue-api-net
+  default:
+    

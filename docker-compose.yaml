@@ -1,0 +1,23 @@
+services:
+  api:
+    image: queue-api:latest
+    build:
+      context: "."
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS}
+      - JWT_KEY=${JWT_KEY}
+      - JWT_ISSUER=loaclhost:1423
+      - JWT_AUDIENCE=loaclhost:1423
+      - AUTHORITY_TOKENS=${AUTHORITY_TOKENS}
+      - MONGODB_URL=${MONGODB_URL}
+    restart: always
+    ports:
+      - 1423:1423
+    networks:
+      - queue-api-net
+
+networks:
+  queue-api-net:
+    name: queue-api-net
+    
