@@ -14,7 +14,7 @@ internal class Program
 
     private static void ConnectToMongoDB()
     {
-        Static.MongoClient = new MongoClient();
+        Static.MongoClient = new MongoClient(Configs.MongoDBURL);
     }
 
     private static void StartServer(string[] args)
