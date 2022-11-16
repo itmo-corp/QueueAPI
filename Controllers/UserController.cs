@@ -13,17 +13,18 @@ namespace QueueAPI.Controllers;
 public class UserController : ControllerBase
 {
     [HttpGet("getDisplayName")]
-    public Task<string> GetDisplayName()
+    public async Task<OperationResult<string>> GetDisplayName()
     {
         var user = GetUser();
-        return user.Credentials.GetDisplayName();
+        return OperationResult<string>.Ok(await user.Credentials.GetDisplayName());
     }
 
     [HttpPost("setDisplayName")]
-    public Task SetDisplayName([FromBody] string name)
+    public async Task<OperationResult> SetDisplayName([FromBody] string name)
     {
         var user = GetUser();
-        return user.Credentials.SetDisplayName(name);
+        await user.Credentials.SetDisplayName(name);
+        return OperationResult.Ok;
     }
 
     private UserData GetUser() => new UserData(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
