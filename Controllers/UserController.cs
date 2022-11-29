@@ -27,5 +27,14 @@ public class UserController : ControllerBase
         return OperationResult.Ok;
     }
 
+    // get user telegram id
+    [HttpGet("getId")]
+    public async Task<OperationResult<string>> GetId()
+    {
+        var user = GetUser();
+        return OperationResult<string>.Ok(await user.Credentials.GetTelegramId());
+    }
+    
+
     private UserData GetUser() => new UserData(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 }

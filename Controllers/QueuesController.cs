@@ -219,6 +219,128 @@ public class QueuesController : ControllerBase
         return OperationResult<bool>.Ok(queueMembersResult.Data!.Select(x => x.UserId).Contains(user.Id.ToString()));
     }
 
+    // get user's known queues names where user is maintainer
+    [HttpGet("getMaintainedQueuesNames")]
+    public async Task<OperationResult<string[]>> GetMainteinedQueuesNames()
+    {
+        var user = GetUser();
+
+        var knownQueuesIds = await user.KnownQueues.Get();
+
+        var queues = knownQueuesIds.Items.Select(x => new LabQueueView(x));
+
+        var names = OperationResultUtils.GetOkData(await Task.WhenAll(queues.Select(x => x.GetName())));
+
+        var maintainers = OperationResultUtils.GetOkData(await Task.WhenAll(queues.Select(x => x.GetMaintainers()))).ToList();
+
+        var maintainedQueuesNames = names.Where((x, i) => maintainers[i].Contains(user.Id));
+
+        return OperationResult<string[]>.Ok(maintainedQueuesNames.ToArray());
+    }
+
+    // get user's known queues ids where user is maintainer
+    [HttpGet("getMaintainedQueuesIds")]
+    public async Task<OperationResult<string[]>> GetMainteinedQueuesIds()
+    {
+        var user = GetUser();
+
+        var knownQueuesIds = await user.KnownQueues.Get();
+
+        var queues = knownQueuesIds.Items.Select(x => new LabQueueView(x));
+
+        var maintainers = OperationResultUtils.GetOkData(await Task.WhenAll(queues.Select(x => x.GetMaintainers()))).ToList();
+
+        var maintainedQueuesIds = knownQueuesIds.Items.Where((x, i) => maintainers[i].Contains(user.Id));
+
+        return OperationResult<string[]>.Ok(maintainedQueuesIds.Select(x => x.ToString()).ToArray());
+    }
+
+    // reset isReady flag for all users in queue
+    [HttpPost("resetReady")]
+    public async Task<OperationResult> ResetReady([FromBody] string queueId)
+    {
+        var user = GetUser();
+
+        if (!await user.KnownQueues.Contains(queueId))
+            return new OperationResult { Status = OperationStatus.Forbid };
+
+        var queue = new LabQueueView(queueId);
+
+        var maintainersResult = await queue.GetMaintainers();
+
+        if (maintainersResult.Status != OperationStatus.Ok)
+            return new OperationResult { Status = maintainersResult.Status };
+
+        if (!maintainersResult.Data!.Contains(user.Id))
+            return new OperationResult { Status = OperationStatus.Forbid };
+        
+        var resetReadyResult = await queue.ResetReady();
+
+        if (resetReadyResult.Status != OperationStatus.Ok)
+            return resetReadyResult;
+
+        return new OperationResult { Status = OperationStatus.Ok };
+    }
+
+    // add user to maintainer list of queue using telegram id
+    [HttpPost("addMaintainer")]
+    public async Task<OperationResult> AddMaintainer([FromBody] AddMaintainerRequest request)
+    {
+        var user = GetUser();
+
+        if (!await user.KnownQueues.Contains(request.QueueId))
+            return new OperationResult { Status = OperationStatus.Forbid };
+
+        var queue = new LabQueueView(request.QueueId);
+
+        var maintainersResult = await queue.GetMaintainers();
+
+        if (maintainersResult.Status != OperationStatus.Ok)
+            return new OperationResult { Status = maintainersResult.Status };
+
+        if (!maintainersResult.Data!.Contains(user.Id))
+            return new OperationResult { Status = OperationStatus.Forbid };
+
+        var maintainer = await UserData.ByTelegramId(request.MaintainerTelegramId);
+
+        if (maintainer is null)
+            return new OperationResult { Status = OperationStatus.NotFound };
+
+        var addMaintainerResult = await queue.AddMaintainer(maintainer);
+
+        if (addMaintainerResult.Status != OperationStatus.Ok)
+            return addMaintainerResult;
+
+        return new OperationResult { Status = OperationStatus.Ok };
+    }
+
+    // leave maintainer list of queue
+    [HttpPost("leaveMaintainer")]
+    public async Task<OperationResult> LeaveMaintainer([FromBody] string queueId)
+    {
+        var user = GetUser();
+
+        if (!await user.KnownQueues.Contains(queueId))
+            return new OperationResult { Status = OperationStatus.Forbid };
+
+        var queue = new LabQueueView(queueId);
+
+        var maintainersResult = await queue.GetMaintainers();
+
+        if (maintainersResult.Status != OperationStatus.Ok)
+            return new OperationResult { Status = maintainersResult.Status };
+
+        if (!maintainersResult.Data!.Contains(user.Id))
+            return new OperationResult { Status = OperationStatus.Forbid };
+
+        var leaveMaintainerResult = await queue.RemoveMaintainer(user);
+
+        if (leaveMaintainerResult.Status != OperationStatus.Ok)
+            return leaveMaintainerResult;
+
+        return new OperationResult { Status = OperationStatus.Ok };
+    }
+
 
     private UserData GetUser() => new UserData(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 }

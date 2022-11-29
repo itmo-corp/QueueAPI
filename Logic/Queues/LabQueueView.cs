@@ -101,4 +101,34 @@ public class LabQueueView
             return new OperationResult<List<QueueMember>> { Status = OperationStatus.NotFound };
         return OperationResult<List<QueueMember>>.Ok(members);
     }
+
+    // reset isReady flag of all members with OperationResult
+    public async Task<OperationResult> ResetReady()
+    {
+        var result = await Collection.UpdateManyAsync(Builders<LabQueue>.Filter.Eq("_id", Id),
+            Builders<LabQueue>.Update.Set("Members.$[].IsReady", false));
+        if (result.MatchedCount == 0)
+            return new OperationResult { Status = OperationStatus.NotFound };
+        return OperationResult.Ok;
+    }
+
+    // add user to maintainers with OperationResult
+    public async Task<OperationResult> AddMaintainer(UserData user)
+    {
+        var result = await Collection.UpdateOneAsync(Builders<LabQueue>.Filter.Eq("_id", Id),
+            Builders<LabQueue>.Update.AddToSet(x => x.Maintainers, user.Id));
+        if (result.MatchedCount == 0)
+            return new OperationResult { Status = OperationStatus.NotFound };
+        return OperationResult.Ok;
+    }
+
+    // remove user from maintainers with OperationResult
+    public async Task<OperationResult> RemoveMaintainer(UserData user)
+    {
+        var result = await Collection.UpdateOneAsync(Builders<LabQueue>.Filter.Eq("_id", Id),
+            Builders<LabQueue>.Update.Pull(x => x.Maintainers, user.Id));
+        if (result.ModifiedCount == 0)
+            return new OperationResult { Status = OperationStatus.NotFound };
+        return OperationResult.Ok;
+    }
 }
