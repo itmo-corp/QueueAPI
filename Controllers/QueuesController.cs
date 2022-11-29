@@ -41,9 +41,9 @@ public class QueuesController : ControllerBase
         if (queue is null)
             return new OperationResult<string> { Status = OperationStatus.NotFound };
 
-        var password = await queue.GetPassword();
+        var passwordResult = await queue.GetPassword();
 
-        if (password != request.Password)
+        if (passwordResult.Data != request.Password)
             return new OperationResult<string> { Status = OperationStatus.Wrong };
 
         await user.KnownQueues.Add(queue.Id.ToString());
@@ -147,9 +147,9 @@ public class QueuesController : ControllerBase
 
         var queues = knownQueuesIds.Items.Select(x => new LabQueueView(x));
 
-        var names = await Task.WhenAll(queues.Select(async x => (await x.GetName())!));
+        var names = OperationResultUtils.GetOkData(await Task.WhenAll(queues.Select(x => x.GetName())));
 
-        return OperationResult<string[]>.Ok(names);
+        return OperationResult<string[]>.Ok(names.ToArray());
     }
 
     [HttpPost("getQueueName")]
@@ -162,12 +162,12 @@ public class QueuesController : ControllerBase
 
         var queue = new LabQueueView(queueId);
 
-        var name = await queue.GetName();
+        var nameResult = await queue.GetName();
 
-        if (name is null)
-            return new OperationResult<string> { Status = OperationStatus.NotFound };
+        if (nameResult.Status != OperationStatus.Ok)
+            return new OperationResult<string> { Status = nameResult.Status };
 
-        return OperationResult<string>.Ok(name);
+        return OperationResult<string>.Ok(nameResult.Data!);
     }
 
     [HttpPost("getQueueInfo")]
@@ -211,12 +211,12 @@ public class QueuesController : ControllerBase
 
         var queue = new LabQueueView(queueId);
 
-        var queueMembers = await queue.GetMembers();
+        var queueMembersResult = await queue.GetMembers();
 
-        if (queueMembers is null)
-            return new OperationResult<bool> { Status = OperationStatus.NotFound };
+        if (queueMembersResult.Status != OperationStatus.Ok)
+            return new OperationResult<bool> { Status = queueMembersResult.Status };
 
-        return OperationResult<bool>.Ok(queueMembers.Select(x => x.UserId).Contains(user.Id.ToString()));
+        return OperationResult<bool>.Ok(queueMembersResult.Data!.Select(x => x.UserId).Contains(user.Id.ToString()));
     }
 
 

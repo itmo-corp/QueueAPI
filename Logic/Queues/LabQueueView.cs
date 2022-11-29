@@ -67,23 +67,38 @@ public class LabQueueView
         return await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).FirstOrDefaultAsync();
     }
 
-    public async Task<string?> GetPassword()
+    public async Task<OperationResult<string>> GetPassword()
     {
-        return await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Password).FirstOrDefaultAsync();
+        var password = await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Password).FirstOrDefaultAsync();
+        if (password is null)
+            return new OperationResult<string> { Status = OperationStatus.NotFound };
+        return OperationResult<string>.Ok(password);
     }
 
-    public async Task<string?> GetName()
+    // get name of queue with OperationResult
+    public async Task<OperationResult<string>> GetName()
     {
-        return await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Name).FirstOrDefaultAsync();
+        var name = await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Name).FirstOrDefaultAsync();
+        if (name is null)
+            return new OperationResult<string> { Status = OperationStatus.NotFound };
+        return OperationResult<string>.Ok(name);
     }
 
-    public async Task<List<ObjectId>?> GetMainteiners()
+    // get maintainers ids of queue with OperationResult
+    public async Task<OperationResult<List<ObjectId>>> GetMaintainers()
     {
-        return await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Maintainers).FirstOrDefaultAsync();
+        var maintainers = await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Maintainers).FirstOrDefaultAsync();
+        if (maintainers is null)
+            return new OperationResult<List<ObjectId>> { Status = OperationStatus.NotFound };
+        return OperationResult<List<ObjectId>>.Ok(maintainers);
     }
 
-    public async Task<List<QueueMember>?> GetMembers()
+    // get members of queue with OperationResult
+    public async Task<OperationResult<List<QueueMember>>> GetMembers()
     {
-        return await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Members).FirstOrDefaultAsync();
+        var members = await Collection.Find(Builders<LabQueue>.Filter.Eq("_id", Id)).Project(x => x.Members).FirstOrDefaultAsync();
+        if (members is null)
+            return new OperationResult<List<QueueMember>> { Status = OperationStatus.NotFound };
+        return OperationResult<List<QueueMember>>.Ok(members);
     }
 }
