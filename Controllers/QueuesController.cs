@@ -39,7 +39,7 @@ public class QueuesController : ControllerBase
         var queue = await LabQueueView.GetQueueByName(request.Name);
 
         if (queue is null)
-            return new OperationResult<string> { Status = OperationStatus.NotExists };
+            return new OperationResult<string> { Status = OperationStatus.NotFound };
 
         var password = await queue.GetPassword();
 
@@ -165,7 +165,7 @@ public class QueuesController : ControllerBase
         var name = await queue.GetName();
 
         if (name is null)
-            return new OperationResult<string> { Status = OperationStatus.NotExists };
+            return new OperationResult<string> { Status = OperationStatus.NotFound };
 
         return OperationResult<string>.Ok(name);
     }
@@ -183,7 +183,7 @@ public class QueuesController : ControllerBase
         var rawQueue = await queue.GetRawQueue();
 
         if (rawQueue is null)
-            return new OperationResult<LabQueueResponce> { Status = OperationStatus.NotExists };
+            return new OperationResult<LabQueueResponce> { Status = OperationStatus.NotFound };
 
         return OperationResult<LabQueueResponce>.Ok(await QueueForResponceConverter.Convert(rawQueue));
     }
@@ -214,7 +214,7 @@ public class QueuesController : ControllerBase
         var queueMembers = await queue.GetMembers();
 
         if (queueMembers is null)
-            return new OperationResult<bool> { Status = OperationStatus.NotExists };
+            return new OperationResult<bool> { Status = OperationStatus.NotFound };
 
         return OperationResult<bool>.Ok(queueMembers.Select(x => x.UserId).Contains(user.Id.ToString()));
     }

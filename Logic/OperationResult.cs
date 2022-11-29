@@ -16,7 +16,7 @@ public class OperationResult
     public static readonly OperationResult Ok = new OperationResult { Status = OperationStatus.Ok };
     public static readonly OperationResult AlreadyTaken = new OperationResult { Status = OperationStatus.AlreadyTaken };
     public static readonly OperationResult Wrong = new OperationResult { Status = OperationStatus.Wrong };
-    public static readonly OperationResult NotExists = new OperationResult { Status = OperationStatus.NotExists };
+    public static readonly OperationResult NotFound = new OperationResult { Status = OperationStatus.NotFound };
 }
 
 public enum OperationStatus
@@ -27,6 +27,6 @@ public enum OperationStatus
     TooManyAttempets = 3,
     Wrong = 4,
     AlreadyTaken = 5,
-    NotExists = 6,
+    NotFound = 6,
     Forbid = 7,
 }

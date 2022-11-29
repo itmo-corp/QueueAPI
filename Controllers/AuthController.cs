@@ -33,7 +33,7 @@ public class AuthController : ControllerBase
         var user = await UserData.ByTelegramId(request.UserTelegramId!);
 
         if (user is null)
-            return new OperationResult<string> { Status = OperationStatus.NotExists };
+            return new OperationResult<string> { Status = OperationStatus.NotFound };
 
         var token = await APITokenManager.CreateToken(user);
 
@@ -50,12 +50,12 @@ public class AuthController : ControllerBase
         var token = await APITokenManager.GetToken(request.Token);
 
         if (token is null)
-            return OperationResult.NotExists;
+            return OperationResult.NotFound;
 
         var user = new UserData(token.UserId);
 
         if (await user.Credentials.GetTelegramId() != request.UserTelegramId)
-            return OperationResult.NotExists;
+            return OperationResult.NotFound;
         
         await APITokenManager.DeleteToken(token);
 
@@ -69,7 +69,7 @@ public class AuthController : ControllerBase
         APIToken? apiToken = await APITokenManager.GetToken(request.APIToken!);
 
         if (apiToken is null)
-            return new OperationResult<JwtToken> { Status = OperationStatus.NotExists };
+            return new OperationResult<JwtToken> { Status = OperationStatus.NotFound };
 
         var user = new UserData(apiToken.UserId);
 
@@ -88,7 +88,7 @@ public class AuthController : ControllerBase
         var user = await UserData.ByTelegramId(request.UserTelegramId);
 
         if (user is null)
-            return new OperationResult<string[]> { Status = OperationStatus.NotExists };
+            return new OperationResult<string[]> { Status = OperationStatus.NotFound };
         
         var tokens = await APITokenManager.GetAllTokensOfUser(user);
 
