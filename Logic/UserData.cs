@@ -43,7 +43,7 @@ public class UserData
         credentials.TelegramId = request.TelegramId;
         credentials.DisplayName = request.Name;
         await userData.Credentials.SaveNewCredentials(credentials);
-        return new OperationResult<UserData> { Status = OperationStatus.Ok, Result = userData };
+        return OperationResult<UserData>.Ok(userData);
     }
 
 }

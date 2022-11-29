@@ -4,9 +4,9 @@ namespace QueueAPI.Logic;
 public class OperationResult<T>
 {
     public OperationStatus Status { get; init; } = OperationStatus.None;
-    public T? Result { get; init; }
+    public T? Data { get; init; }
 
-    public static OperationResult<T> Ok(T result) => new OperationResult<T> { Status = OperationStatus.Ok, Result = result };
+    public static OperationResult<T> Ok(T data) => new OperationResult<T> { Status = OperationStatus.Ok, Data = data };
 }
 
 public class OperationResult
